@@ -1,50 +1,63 @@
-# Data Warehouse and Analytics Project
+## Overview
 
-This project demonstrates a comprehensive data warehousing and analytics solution, from building a data warehouse to generating actionable insights. Designed as a portfolio project, it highlights industry best practices in data engineering and analytics.
+This project demonstrates the development of a modern data warehouse using MySQL, following the Medallion Architecture: Bronze, Silver, and Gold layers.
+
+The warehouse integrates sales-related data from CRM and ERP source systems provided as CSV files. It focuses on data ingestion, data cleansing, standardization, and analytical data modeling.
+
+The project is designed as a data engineering portfolio project to practice SQL, ETL processes, data quality validation, and dimensional modeling.
 
 ---
 ## Data Architecture
 
-The data architecture for this project follows Medallion Architecture **Bronze**, **Silver**, and **Gold** layers:
+The project follows the Medallion Architecture, consisting of three layers:
 
-1. **Bronze Layer**: Stores raw data as-is from the source systems. Data is ingested from CSV Files into SQL Server Database.
-2. **Silver Layer**: This layer includes data cleansing, standardization, and normalization processes to prepare data for analysis.
-3. **Gold Layer**: Houses business-ready data modeled into a star schema required for reporting and analytics.
+1. **Bronze Layer** — stores raw data ingested from CRM and ERP CSV files with minimal transformations.
+2. **Silver Layer** — cleanses and standardizes data, handles duplicates and missing or invalid values, and converts source data into appropriate data types.
+3. **Gold Layer** — provides business-ready dimension and fact views designed for analytical queries and reporting.
 
 ---
-## Project Overview
+## Project Structure
 
-This project involves:
+The project is organized into scripts for database initialization, table creation, data loading, transformations, and data quality checks.
 
-1. **Data Architecture**: Designing a Modern Data Warehouse Using Medallion Architecture **Bronze**, **Silver**, and **Gold** layers.
-2. **ETL Pipelines**: Extracting, transforming, and loading data from source systems into the warehouse.
-3. **Data Modeling**: Developing fact and dimension tables optimized for analytical queries.
-4. **Analytics & Reporting**: Creating SQL-based reports and dashboards for actionable insights.
+The SQL scripts are separated by processing layer to make the workflow easier to understand and maintain.
 
 ---
 
-## Project Requirements
+## Current Implementation
 
-### Building the Data Warehouse (Data Engineering)
+### Bronze Layer
 
-#### Objective
-Develop a modern data warehouse using MYSQL to consolidate sales data, enabling analytical reporting and informed decision-making.
+- Created the data warehouse database and Bronze tables.
+- Imported CRM and ERP datasets from CSV files.
+- Preserved source data with minimal transformations.
 
-#### Specifications
-- **Data Sources**: Import data from two source systems (ERP and CRM) provided as CSV files.
-- **Data Quality**: Cleanse and resolve data quality issues prior to analysis.
-- **Integration**: Combine both sources into a single, user-friendly data model designed for analytical queries.
-- **Scope**: Focus on the latest dataset only; historization of data is not required.
-- **Documentation**: Provide clear documentation of the data model to support both business stakeholders and analytics teams.
+### Silver Layer
+
+- Defined tables with appropriate data types.
+- Implemented data cleansing and standardization.
+- Handled duplicate records and inconsistent values.
+- Transformed dates, identifiers, and other source fields.
+- Added data quality checks to validate the transformed data.
+
+### Gold Layer
+
+- Created `gold_dim_customers` to combine customer attributes from CRM and ERP sources.
+- Created `gold_dim_products` to provide product and category information, filtering for current products.
+- Created `gold_fact_sales` to connect sales transactions with customer and product dimensions.
+- Used surrogate keys in the dimension views to support analytical joins.
+
+The Gold layer follows a star-schema-oriented dimensional model, making the data easier to query for analytical purposes.
 
 ---
 
-### BI: Analytics & Reporting (Data Analysis)
+## Data Sources
 
-#### Objective
-Develop SQL-based analytics to deliver detailed insights into:
-- **Customer Behavior**
-- **Product Performance**
-- **Sales Trends**
+The warehouse integrates two source systems:
 
-These insights empower stakeholders with key business metrics, enabling strategic decision-making.  
+- **CRM** — customer information, product information, and sales transactions.
+- **ERP** — additional customer attributes, geographical information, and product category details.
+
+The source datasets are provided as CSV files.
+
+---
