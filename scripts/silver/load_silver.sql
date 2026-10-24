@@ -1,3 +1,19 @@
+/*
+script purpose:
+this script cleans and transforms data from the bronze
+layer and loads it into the silver layer tables.
+
+transformations include:
+- removing duplicate customer records
+- trimming whitespace and standardizing text values
+- handling missing and invalid values
+- converting data types
+- standardizing customer gender, marital status, and country names
+- validating dates and correcting sales data
+- transforming product keys and deriving product end dates
+*/
+
+
 truncate table silver_crm_cust_info;
 
 insert into silver_crm_cust_info(cst_id,cst_key,cst_firstname,cst_lastname,cst_marital_status,cst_gndr,cst_create_date)
@@ -23,6 +39,7 @@ from
 		from bronze_crm_cust_info
 		where cst_id is not null and TRIM(cst_id) <> "") as t 
 where flag_list = 1;
+
 
 truncate table silver_crm_prd_info;
 
@@ -58,6 +75,7 @@ select
         interval 1 DAY
     ) as prd_end_dt
 from bronze_crm_prd_info;
+
 
 truncate table silver_crm_sales_details;
 
@@ -106,3 +124,44 @@ case
     else cast(nullif(trim(sls_price), '') as signed)
 end as sls_price
 from bronze_crm_sales_details;
+
+
+truncate table silver_erp_cust_az12;
+
+insert into silver_erp_cust_az12(CID,BDATE,GEN)
+select 
+case 
+when CID like "NAS%" then substring(CID, 4, length(CID))
+else CID
+end as CID,
+if(BDATE > curdate(), NULL, BDATE) as BDATE,
+case 
+	when upper(trim(GEN)) in ("MALE","M") then "Male"
+	when upper(trim(GEN)) in ("FEMALE","F") then "Female"
+	else "n/a"
+end as GEN
+from bronze_erp_cust_az12;
+
+
+truncate table silver_erp_loc_a101;
+
+insert into silver_erp_loc_a101(CID,CNTRY)
+select 
+replace(CID, "-", "_") as CID,
+case 
+	when trim(CNTRY) in ("US", "USA") then "United States"
+	when trim(CNTRY) = "DE" then "Germany"
+	when trim(CNTRY) = "" then "n/a"
+	else trim(CNTRY)
+end as CNTRY 
+from bronze_erp_loc_a101;
+
+
+truncate table silver_erp_px_cat_g1v2;
+
+insert into silver_erp_px_cat_g1v2(ID,CAT,SUBCAT,MAINTENANCE)
+select 
+ID,CAT,SUBCAT,MAINTENANCE
+from bronze_erp_px_cat_g1v2;
+
+
