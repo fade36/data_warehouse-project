@@ -1,6 +1,8 @@
+truncate table silver_crm_cust_info;
 
 insert into silver_crm_cust_info(cst_id,cst_key,cst_firstname,cst_lastname,cst_marital_status,cst_gndr,cst_create_date)
-select cst_id,
+select 
+cst_id,
 cst_key,
 TRIM(cst_firstname) as cst_firstname,
 TRIM(cst_lastname) as cst_lastname,
@@ -22,6 +24,7 @@ from
 		where cst_id is not null and TRIM(cst_id) <> "") as t 
 where flag_list = 1;
 
+truncate table silver_crm_prd_info;
 
 insert into silver_crm_prd_info (
     prd_id,
@@ -55,3 +58,51 @@ select
         interval 1 DAY
     ) as prd_end_dt
 from bronze_crm_prd_info;
+
+truncate table silver_crm_sales_details;
+
+insert into silver_crm_sales_details (
+    sls_ord_num, sls_prd_key, sls_cust_id,
+    sls_order_dt, sls_ship_dt, sls_due_dt,
+    sls_sales, sls_quantity, sls_price
+)
+select
+    sls_ord_num,
+    sls_prd_key,
+    sls_cust_id,
+    case
+        when sls_order_dt is null or sls_order_dt = "" or sls_order_dt = "0" or char_length(sls_order_dt) <> 8
+        then null
+        else str_to_date(sls_order_dt, '%Y%m%d')
+    end as sls_order_dt,
+    case
+        when sls_ship_dt is null or sls_ship_dt = "" or sls_ship_dt = "0" or char_length(sls_ship_dt) <> 8
+        then null
+        else str_to_date(sls_ship_dt, '%Y%m%d')
+    end as sls_ship_dt,
+    case
+        when sls_due_dt is null or sls_due_dt = "" or sls_due_dt = "0" or char_length(sls_due_dt) <> 8
+        then null
+        else str_to_date(sls_due_dt, '%Y%m%d')
+    end as sls_due_dt,
+    case
+    when nullif(trim(sls_sales), '') is null
+        or cast(nullif(trim(sls_sales), '') as signed) <= 0
+        or cast(nullif(trim(sls_sales), '') as signed)
+            <> cast(nullif(trim(sls_quantity), '') as signed)
+            * abs(cast(nullif(trim(sls_price), '') as signed))
+    then cast(nullif(trim(sls_quantity), '') as signed)
+         * abs(cast(nullif(trim(sls_price), '') as signed))
+    else cast(nullif(trim(sls_sales), '') as signed)
+end as sls_sales,
+
+cast(nullif(trim(sls_quantity), '') as signed) as sls_quantity,
+
+case
+    when nullif(trim(sls_price), '') is null
+        or cast(nullif(trim(sls_price), '') as signed) <= 0
+    then cast(nullif(trim(sls_sales), '') as signed)
+         / nullif(cast(nullif(trim(sls_quantity), '') as signed), 0)
+    else cast(nullif(trim(sls_price), '') as signed)
+end as sls_price
+from bronze_crm_sales_details;
