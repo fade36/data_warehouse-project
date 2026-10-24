@@ -1,6 +1,3 @@
-/*
-dsdsdskfjskndfksnk
-*/
 
 insert into silver_crm_cust_info(cst_id,cst_key,cst_firstname,cst_lastname,cst_marital_status,cst_gndr,cst_create_date)
 select cst_id,
@@ -24,4 +21,4 @@ from
 		from bronze_crm_cust_info
 		where cst_id is not null and TRIM(cst_id) <> "") as t 
 where flag_list = 1;
-
+ 
