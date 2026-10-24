@@ -147,7 +147,7 @@ truncate table silver_erp_loc_a101;
 
 insert into silver_erp_loc_a101(CID,CNTRY)
 select 
-replace(CID, "-", "_") as CID,
+replace(CID, "-", "") as CID,
 case 
 	when trim(CNTRY) in ("US", "USA") then "United States"
 	when trim(CNTRY) = "DE" then "Germany"
